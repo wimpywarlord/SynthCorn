@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+
+/* Model Card Animation - Model Cards */
+@keyframes scroll-1 {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scroll-2 {
+  0% {
+    transform: translateY(-10%);
+  }
+  100% {
+    transform: translateY(-60%);
+  }
+}
+
+@keyframes scroll-3 {
+  0% {
+    transform: translateY(-20%);
+  }
+  100% {
+    transform: translateY(-70%);
+  }
+}
+
+.scroll-animation-1 {
+  animation: scroll-1 110s linear infinite alternate;
+}
+
+.scroll-animation-2 {
+  animation: scroll-2 120s linear infinite alternate;
+}
+
+.scroll-animation-3 {
+  animation: scroll-3 90s linear infinite alternate;
+}
