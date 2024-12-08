@@ -79,14 +79,14 @@ body {
 @keyframes shine {
   0% {
     border-color: #ffd700;
-    box-shadow: 0 0 4px #ffd700;
+    box-shadow: 0 0 3px #ffd700;
   }
   50% {
     border-color: #fff7cc;
-    box-shadow: 0 0 15px #ffd700;
+    box-shadow: 0 0 13px #ffd700;
   }
   100% {
     border-color: #ffd700;
-    box-shadow: 0 0 4px #ffd700;
+    box-shadow: 0 0 3px #ffd700;
   }
 }

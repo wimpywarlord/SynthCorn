@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CustomProgress } from "@/components/ui/custom-progress";
 
 // Add types for messages
 interface Message {
@@ -74,21 +75,21 @@ const impressType = (selectedModel: Model) => {
       <Badge
         variant="outline"
         className="
-  border-2 
-  border-[#FFD700] 
-  dark:border-[#FFD700] 
-  rounded-full 
-  bg-gradient-to-r 
-  from-[#FFD700] 
-  via-[#FFF7CC] 
-  to-[#FFD700] 
-  bg-clip-text 
-  text-transparent 
-  text-black
-  dark:text-white
-  animate-shine
-  font-bold
-"
+        border-2 
+        border-[#FFD700] 
+        dark:border-[#FFD700] 
+        rounded-full 
+        bg-gradient-to-r 
+        from-[#FFD700] 
+        via-[#FFF7CC] 
+        to-[#FFD700] 
+        bg-clip-text 
+        text-transparent 
+        text-black
+        dark:text-white
+        animate-shine
+        font-bold
+      "
         style={{
           animation: "shine 3s infinite",
           textShadow: "0 0 5px rgba(255, 215, 0, 0.5)",
@@ -106,6 +107,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [averageScore, setAverageScore] = useState(0);
 
   // Reset chat when model changes
   useEffect(() => {
@@ -114,6 +116,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
     setMessages([]);
     setConversationId(null);
     setIsLoading(false);
+    setAverageScore(0); // Add this line
   }, [selectedModel.id]); // Dependency on model ID ensures reset happens on model change
 
   // Scroll to bottom of messages
@@ -160,11 +163,35 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
 
       setConversationId(response.data.conversationId);
       setMessage("");
+
+      // Update average score when we get a response
+      if (response.data.impressionScore) {
+        setAverageScore((prev) => {
+          const newTotal =
+            prev * messages.length + response.data.impressionScore;
+          return Math.round(newTotal / (messages.length + 1));
+        });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getBackgroundColor = (): string => {
+    const thresholdMax = selectedModel.impress_threshold;
+
+    if (averageScore >= thresholdMax) {
+      return "bg-pink-500 dark:bg-pink-500"; // yellow for both modes
+    }
+    if (averageScore >= thresholdMax - 20) {
+      return "bg-green-500 dark:bg-green-500"; // orange for both modes
+    }
+    if (averageScore >= thresholdMax - 30) {
+      return "bg-orange-500 dark:bg-orange-500"; // green for both modes
+    }
+    return "bg-yellow-500 dark:bg-yellow-500"; // default color
   };
 
   return (
@@ -173,19 +200,39 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
         <div>
           {/* Avatar */}
           {messages.length > 0 && (
-            <div className="flex flex-row items-center gap-4 pb-5 pt-4 max-h-[5vh]">
-              <Avatar>
-                <AvatarImage
-                  className="object-cover"
-                  src={selectedModel?.model_thumbnail_image_src}
-                  alt="model_thumbnail"
-                />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-              {selectedModel?.name}
-              <span className="flex items-center justify-center">
-                {impressType(selectedModel)}
-              </span>
+            <div className="flex flex-col gap-2 py-2">
+              <div className="flex flex-row items-center gap-4">
+                <Avatar className="border-2 border-white dark:border-black">
+                  <AvatarImage
+                    className="object-cover"
+                    src={selectedModel?.model_thumbnail_image_src}
+                    alt="model_thumbnail"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col gap-1 flex-grow">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{selectedModel?.name}</span>
+                    <span className="flex items-center justify-center">
+                      {impressType(selectedModel)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 w-full">
+                    <CustomProgress
+                      value={averageScore}
+                      max={selectedModel.impress_threshold}
+                      className="h-2 w-full"
+                      backgroundClass={getBackgroundColor()}
+                    />
+                    <span className="text-xs font-medium w-12">
+                      {averageScore <= selectedModel.impress_threshold
+                        ? averageScore
+                        : selectedModel.impress_threshold}
+                      /{selectedModel.impress_threshold}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -207,7 +254,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
                 {selectedModel.kinks?.map((kink) => (
                   <Badge
                     key={kink.id}
-                    className={`!bg-pink-500 rounded-full text-black dark:text-white`}
+                    className={`!bg-pink-400 rounded-full text-black dark:text-white`}
                   >
                     {kink.kink}
                   </Badge>
@@ -218,7 +265,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
                 {selectedModel.categories?.map((category) => (
                   <Badge
                     key={category.id}
-                    className={`!bg-teal-500 rounded-full text-black dark:text-white`}
+                    className={`!bg-teal-400 rounded-full text-black dark:text-white`}
                   >
                     {category.category}
                   </Badge>
@@ -263,9 +310,6 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
                           className="rounded-lg max-h-[300px] w-auto object-cover animate-scale-in"
                           loading="lazy"
                         />
-                        <p className="text-xs mt-2 text-center italic opacity-70">
-                          Special reward unlocked! 🎁
-                        </p>
                       </div>
                     )}
                     <div className="text-xs opacity-70 mt-1 block text-right">
