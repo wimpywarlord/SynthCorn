@@ -44,4 +44,40 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  const { supabaseClient } = req;
+  const { id } = req.params;
+
+  try {
+    const { data: model, error } = await supabaseClient
+      .from("models")
+      .select(
+        `
+        *,
+        kinks (
+          id,
+          kink
+        ),
+        categories (
+          id,
+          category
+        )
+      `
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    if (!model) {
+      return res.status(404).json({ error: "Model not found" });
+    }
+
+    res.json(model);
+  } catch (error) {
+    console.error("Error fetching model details:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

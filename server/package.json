@@ -1,5 +1,10 @@
 {
   "dependencies": {
+    "@langchain/anthropic": "^0.3.8",
+    "@langchain/community": "^0.3.17",
+    "@langchain/core": "^0.3.22",
+    "@langchain/langgraph": "^0.2.27",
+    "@langchain/openai": "^0.3.14",
     "@supabase/supabase-js": "^2.47.2",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",

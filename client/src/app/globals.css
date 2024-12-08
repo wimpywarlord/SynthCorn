@@ -57,3 +57,36 @@ body {
 .scroll-animation-3 {
   animation: scroll-3 90s linear infinite alternate;
 }
+
+/* Float Animation - Logo */
+@keyframes float {
+  0% {
+    transform: translatey(0);
+  }
+  50% {
+    transform: translatey(-20px);
+  }
+  100% {
+    transform: translatey(0);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* SHINE */
+@keyframes shine {
+  0% {
+    border-color: #ffd700;
+    box-shadow: 0 0 4px #ffd700;
+  }
+  50% {
+    border-color: #fff7cc;
+    box-shadow: 0 0 15px #ffd700;
+  }
+  100% {
+    border-color: #ffd700;
+    box-shadow: 0 0 4px #ffd700;
+  }
+}

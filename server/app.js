@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import modelsRouter from "./routes/models.js";
+import chatRouter from "./routes/chat.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -29,7 +30,7 @@ app.get("/test", (req, res) => {
 });
 
 app.use("/models", modelsRouter);
-
+app.use("/chat", chatRouter);
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {

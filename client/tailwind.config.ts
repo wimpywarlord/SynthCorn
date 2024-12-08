@@ -24,6 +24,9 @@ const config: Config = {
         "103": "1.03",
         "104": "1.04",
       },
+      animation: {
+        shine: "shine 3s infinite",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
