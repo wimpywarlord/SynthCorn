@@ -179,17 +179,17 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
     }
   };
 
-  const getBackgroundColor = (): string => {
+  const getBackgroundColor = () => {
     const thresholdMax = selectedModel.impress_threshold;
 
     if (averageScore >= thresholdMax) {
-      return "bg-pink-500 dark:bg-pink-500"; // yellow for both modes
+      return "bg-pink-500 dark:bg-pink-500"; // pink for both modes
     }
     if (averageScore >= thresholdMax - 20) {
-      return "bg-green-500 dark:bg-green-500"; // orange for both modes
+      return "bg-green-500 dark:bg-green-500"; // green for both modes
     }
     if (averageScore >= thresholdMax - 30) {
-      return "bg-orange-500 dark:bg-orange-500"; // green for both modes
+      return "bg-orange-500 dark:bg-orange-500"; // orange for both modes
     }
     return "bg-yellow-500 dark:bg-yellow-500"; // default color
   };
@@ -218,6 +218,9 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
                     </span>
                   </div>
                   <div className="flex items-center gap-2 w-full">
+                    <span className="text-xs font-medium w-12">
+                      Impress Score
+                    </span>
                     <CustomProgress
                       value={averageScore}
                       max={selectedModel.impress_threshold}

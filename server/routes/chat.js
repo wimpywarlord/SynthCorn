@@ -94,13 +94,14 @@ const createState = async (modelPrompt, history = []) => {
 
 // Create the graph
 function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
-  // Create a new state graph
+  // Create a new state graph with giftMessage in channels
   const workflow = new StateGraph({
     channels: {
       messages: "list",
       modelPrompt: "value",
       impressionScore: "value",
       fullHistory: "list",
+      giftMessage: "value",
     },
   });
 
@@ -163,7 +164,7 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
       Rate the following message on a scale of 1-100 based on how impressed you would be:
       ${lastMessage.content}
 
-      Consider factors like creativity, humor, charm, and respect.
+      Consider factors like creativity, humor, charm, uniqueness, genuine interest, effort and confidence.
       Return only the numeric score.`),
       ]);
 
@@ -173,23 +174,26 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
       }
 
       // If score exceeds threshold, generate a gift message
-      let giftMessage = "";
+      let giftMessage = null;
       if (score >= impressThreshold) {
         const giftResponse = await selectedLLM.invoke([
           new SystemMessage(`You are an OnlyFans model with the following personality:
         ${state.modelPrompt}
-
-        The user just impressed you with their message. Write a flirty, brief response (max 2 sentences) 
-        telling them you're sending them a special photo as a reward.
-        Be playful but tasteful.`),
+        
+        TASK: Write a flirty reward message (1 sentence maximum).
+        - Mention you're sending a photo
+        - Keep it tasteful
+        - DO NOT leave an empty response
+        `),
         ]);
-        giftMessage = giftResponse.content;
+
+        giftMessage = giftResponse.content.trim();
       }
 
       return {
         ...state,
         impressionScore: score,
-        giftMessage: giftMessage,
+        giftMessage,
       };
     } catch (error) {
       console.error("Error in scorer node:", error);
@@ -324,7 +328,27 @@ router.post("/:model_id", async (req, res) => {
     // 7. Get the model's response (last message)
     const response = newState.messages[newState.messages.length - 1];
 
-    // 8. Update conversation in database with full history
+    // Initialize response message and reward image
+    let responseMessage = response.content;
+    let rewardImage = null;
+
+    // Only append gift message and get reward image if threshold is met
+    if (newState.impressionScore >= model.impress_threshold) {
+      // Add gift message if it exists
+      if (newState.giftMessage) {
+        responseMessage = `${responseMessage}\n\n${newState.giftMessage}`;
+      }
+
+      // Get random reward image if available
+      if (model.model_image_gallery.length > 0) {
+        const randomIndex = Math.floor(
+          Math.random() * model.model_image_gallery.length
+        );
+        rewardImage = model.model_image_gallery[randomIndex].image_url;
+      }
+    }
+
+    // Update conversation in database
     await supabaseClient
       .from("conversations")
       .update({
@@ -332,7 +356,7 @@ router.post("/:model_id", async (req, res) => {
           ...state.fullHistory,
           {
             type: "ai",
-            content: response.content,
+            content: responseMessage, // Use the already combined message
             timestamp: new Date(),
           },
         ],
@@ -340,27 +364,12 @@ router.post("/:model_id", async (req, res) => {
       })
       .eq("id", conversationId);
 
-    // Update the route handler response section:
-    let responseMessage = response.content;
-    let rewardImage = null;
-
-    if (
-      newState.impressionScore >= model.impress_threshold &&
-      model.model_image_gallery.length > 0
-    ) {
-      const randomIndex = Math.floor(
-        Math.random() * model.model_image_gallery.length
-      );
-      rewardImage = model.model_image_gallery[randomIndex].image_url;
-      responseMessage += "\n\n" + newState.giftMessage;
-    }
-
     res.json({
       conversationId,
       message: responseMessage,
       impressionScore: newState.impressionScore,
       rewardImage,
-      llmType, // Include the LLM type in the response
+      llmType,
     });
   } catch (error) {
     console.error("Error in chat:", error);
