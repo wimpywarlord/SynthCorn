@@ -80,11 +80,16 @@ const createState = async (modelPrompt, history = []) => {
     // Window the messages to prevent context overflow
     const windowedMessages = getWindowedMessages(messages, modelPrompt);
 
+    // Extract scoreHistory from conversation if it exists
+    const scoreHistory =
+      history.find((msg) => msg.type === "scoreHistory")?.content || [];
+
     return {
       messages: windowedMessages,
       modelPrompt,
       impressionScore: 0,
-      fullHistory: history, // Keep full history in state
+      fullHistory: history,
+      scoreHistory: scoreHistory,
     };
   } catch (error) {
     console.error("Error initializing state:", error);
@@ -102,6 +107,7 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
       impressionScore: "value",
       fullHistory: "list",
       giftMessage: "value",
+      scoreHistory: "list",
     },
   });
 
@@ -164,7 +170,7 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
       Rate the following message on a scale of 1-100 based on how impressed you would be:
       ${lastMessage.content}
 
-      Consider factors like creativity, humor, charm, uniqueness, genuine interest, effort and confidence.
+      Consider factors like creativity, humor, charm, uniqueness, genuine interest, respectfulness, effort and confidence.
       Return only the numeric score.`),
       ]);
 
@@ -173,9 +179,18 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
         throw new Error("Invalid score received");
       }
 
-      // If score exceeds threshold, generate a gift message
+      // Add new score to history
+      const updatedScoreHistory = [...(state.scoreHistory || []), score];
+
+      // Calculate average score
+      const averageScore = Math.round(
+        updatedScoreHistory.reduce((a, b) => a + b, 0) /
+          updatedScoreHistory.length
+      );
+
+      // Check threshold against average score
       let giftMessage = null;
-      if (score >= impressThreshold) {
+      if (averageScore >= impressThreshold) {
         const giftResponse = await selectedLLM.invoke([
           new SystemMessage(`You are an OnlyFans model with the following personality:
         ${state.modelPrompt}
@@ -192,7 +207,8 @@ function createChatGraph(modelPrompt, impressThreshold, selectedLLM) {
 
       return {
         ...state,
-        impressionScore: score,
+        impressionScore: averageScore,
+        scoreHistory: updatedScoreHistory,
         giftMessage,
       };
     } catch (error) {
@@ -353,10 +369,15 @@ router.post("/:model_id", async (req, res) => {
       .from("conversations")
       .update({
         messages: [
-          ...state.fullHistory,
+          ...state.fullHistory.filter((msg) => msg.type !== "scoreHistory"),
           {
             type: "ai",
-            content: responseMessage, // Use the already combined message
+            content: responseMessage,
+            timestamp: new Date(),
+          },
+          {
+            type: "scoreHistory",
+            content: newState.scoreHistory,
             timestamp: new Date(),
           },
         ],
@@ -364,10 +385,18 @@ router.post("/:model_id", async (req, res) => {
       })
       .eq("id", conversationId);
 
+    console.log(newState.scoreHistory);
+    // Calculate average
+    const avgScore = Math.round(
+      newState.scoreHistory.reduce((a, b) => a + b, 0) /
+        newState.scoreHistory.length
+    );
+
     res.json({
       conversationId,
       message: responseMessage,
       impressionScore: newState.impressionScore,
+      avgScore,
       rewardImage,
       llmType,
     });

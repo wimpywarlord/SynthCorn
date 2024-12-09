@@ -22,6 +22,7 @@ interface ChatResponse {
   conversationId: string;
   impressionScore: number;
   rewardImage?: string;
+  avgScore: number;
 }
 
 const impressType = (selectedModel: Model) => {
@@ -107,7 +108,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [averageScore, setAverageScore] = useState(0);
+  const [impressionScore, setImpressionScore] = useState(0);
 
   // Reset chat when model changes
   useEffect(() => {
@@ -116,7 +117,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
     setMessages([]);
     setConversationId(null);
     setIsLoading(false);
-    setAverageScore(0); // Add this line
+    setImpressionScore(0); // Add this line
   }, [selectedModel.id]); // Dependency on model ID ensures reset happens on model change
 
   // Scroll to bottom of messages
@@ -164,14 +165,8 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
       setConversationId(response.data.conversationId);
       setMessage("");
 
-      // Update average score when we get a response
-      if (response.data.impressionScore) {
-        setAverageScore((prev) => {
-          const newTotal =
-            prev * messages.length + response.data.impressionScore;
-          return Math.round(newTotal / (messages.length + 1));
-        });
-      }
+      // Update impression score when we get a response
+      setImpressionScore(response.data.avgScore);
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -180,15 +175,15 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
   };
 
   const getBackgroundColor = () => {
-    const thresholdMax = selectedModel.impress_threshold;
+    const threshold = selectedModel.impress_threshold;
 
-    if (averageScore >= thresholdMax) {
+    if (impressionScore >= threshold) {
       return "bg-pink-500 dark:bg-pink-500"; // pink for both modes
     }
-    if (averageScore >= thresholdMax - 20) {
+    if (impressionScore >= threshold - 20) {
       return "bg-green-500 dark:bg-green-500"; // green for both modes
     }
-    if (averageScore >= thresholdMax - 30) {
+    if (impressionScore >= threshold - 30) {
       return "bg-orange-500 dark:bg-orange-500"; // orange for both modes
     }
     return "bg-yellow-500 dark:bg-yellow-500"; // default color
@@ -202,7 +197,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
           {messages.length > 0 && (
             <div className="flex flex-col gap-2 py-2">
               <div className="flex flex-row items-center gap-4">
-                <Avatar className="border-2 border-white dark:border-black">
+                <Avatar className="border-2 border-white h-14 w-14">
                   <AvatarImage
                     className="object-cover"
                     src={selectedModel?.model_thumbnail_image_src}
@@ -222,14 +217,14 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
                       Impress Score
                     </span>
                     <CustomProgress
-                      value={averageScore}
+                      value={impressionScore}
                       max={selectedModel.impress_threshold}
                       className="h-2 w-full"
                       backgroundClass={getBackgroundColor()}
                     />
                     <span className="text-xs font-medium w-12">
-                      {averageScore <= selectedModel.impress_threshold
-                        ? averageScore
+                      {impressionScore <= selectedModel.impress_threshold
+                        ? impressionScore
                         : selectedModel.impress_threshold}
                       /{selectedModel.impress_threshold}
                     </span>
