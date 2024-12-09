@@ -11,6 +11,15 @@ const CustomProgress = React.forwardRef<HTMLDivElement, CustomProgressProps>(
   ({ className, value, max, backgroundClass, ...props }, ref) => {
     const percentage = Math.min((value / max) * 100, 100);
 
+    console.log(
+      "CustomProgress - value:",
+      value,
+      "max:",
+      max,
+      "backgroundClass:",
+      backgroundClass
+    );
+
     return (
       <div
         ref={ref}
@@ -23,7 +32,7 @@ const CustomProgress = React.forwardRef<HTMLDivElement, CustomProgressProps>(
         <div
           className={cn(
             "h-full w-full flex-1 transition-all duration-300 ease-in-out",
-            "!" + backgroundClass
+            backgroundClass
           )}
           style={{ width: `${percentage}%` }}
         />

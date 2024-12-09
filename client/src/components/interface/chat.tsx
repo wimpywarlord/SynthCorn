@@ -178,15 +178,15 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
     const threshold = selectedModel.impress_threshold;
 
     if (impressionScore >= threshold) {
-      return "bg-pink-500 dark:bg-pink-500"; // pink for both modes
+      return "bg-pink-500";
     }
-    if (impressionScore >= threshold - 20) {
-      return "bg-green-500 dark:bg-green-500"; // green for both modes
+    if (impressionScore >= threshold * 0.8) {
+      return "bg-green-500";
     }
-    if (impressionScore >= threshold - 30) {
-      return "bg-orange-500 dark:bg-orange-500"; // orange for both modes
+    if (impressionScore >= threshold * 0.6) {
+      return "bg-orange-500";
     }
-    return "bg-yellow-500 dark:bg-yellow-500"; // default color
+    return "bg-yellow-500";
   };
 
   return (

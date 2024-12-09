@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ChatBox from "@/components/interface/chat";
+import { X } from "lucide-react";
 
 // Define the type for an individual image in the model's image gallery
 export interface ModelImage {
@@ -47,6 +48,7 @@ export type ModelsResponse = Model[];
 // Define the type for the response containing an array of models
 export default function Home() {
   const [models, setModels] = useState<ModelsResponse>();
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(true); // Track first visit
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
@@ -95,8 +97,47 @@ export default function Home() {
     fetchModelDetails();
   }, [selectedModel?.id, apiUrl]);
 
+  const closeModal = () => {
+    setIsFirstVisit(false);
+    localStorage.setItem("hasVisited", "true"); // Store visit in local storage
+  };
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("hasVisited");
+    if (hasVisited) {
+      setIsFirstVisit(false);
+    }
+  }, []);
+
   return (
     <div className="w-screen h-screen overflow-hidden">
+      {/* Modal for first-time visitors */}
+      {isFirstVisit && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white rounded-3xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={closeModal}
+              className="absolute top-5 right-5 text-black dark:text-white hover:text-gray-900"
+              aria-label="Close"
+            >
+              <X size={23} />
+            </button>
+            {/* Add your poster content here */}
+            <img
+              src="/img/how_to_poster.webp"
+              alt="Usage Poster"
+              className="w-full w-[75vh] h-[75vh] rounded-3xl"
+            />
+          </div>
+        </div>
+      )}
       <div className="hidden lg:flex h-screen">
         <div className="w-5/12 p-4 min-h-full">
           <div className="bg-slate-200 dark:bg-zinc-800 min-h-full w-full rounded-xl flex flex-col">
@@ -118,7 +159,7 @@ export default function Home() {
                       height={250}
                       priority
                     />
-                    <span className="text-md font-thin text-zinc-500 dark:text-slate-200">
+                    <span className="text-md font-slim text-zinc-950 dark:text-slate-200">
                       Who's it gonna be?
                     </span>
                   </>
