@@ -9,6 +9,7 @@ const nextConfig = {
     ],
   },
   output: "export",
+  crossOrigin: "anonymous",
 };
 
 export default nextConfig;
