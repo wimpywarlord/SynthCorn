@@ -7,10 +7,12 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+    unoptimized: true,
   },
   output: "export",
   distDir: "out",
   crossOrigin: "anonymous",
+  assetPrefix: '.',
 };
 
 export default nextConfig;

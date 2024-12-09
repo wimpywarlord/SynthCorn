@@ -113,9 +113,10 @@ export default function Home() {
                   <>
                     <Image
                       alt="logo"
-                      src="/img/logo.png"
-                      width="250"
-                      height="250"
+                      src="./img/logo.png"
+                      width={250}
+                      height={250}
+                      priority
                     />
                     <span className="text-md font-thin text-zinc-500 dark:text-slate-200">
                       Who's it gonna be?
