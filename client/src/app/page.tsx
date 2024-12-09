@@ -113,7 +113,7 @@ export default function Home() {
                   <>
                     <Image
                       alt="logo"
-                      src="./img/logo.png"
+                      src="/img/logo.png"
                       width={250}
                       height={250}
                       priority

@@ -12,7 +12,8 @@ const nextConfig = {
   output: "export",
   distDir: "out",
   crossOrigin: "anonymous",
-  assetPrefix: '.',
+  assetPrefix: '/',
+  basePath: '',
 };
 
 export default nextConfig;
