@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import bodyParser from "body-parser";
 import modelsRouter from "./routes/models.js";
 import chatRouter from "./routes/chat.js";
@@ -8,6 +9,14 @@ dotenv.config();
 const app = express();
 
 import { createClient } from "@supabase/supabase-js";
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-frontend-domain.com'] // Replace with your actual frontend domain
+    : ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));

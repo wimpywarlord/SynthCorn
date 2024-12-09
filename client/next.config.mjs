@@ -9,6 +9,7 @@ const nextConfig = {
     ],
   },
   output: "export",
+  distDir: "out",
   crossOrigin: "anonymous",
 };
 
