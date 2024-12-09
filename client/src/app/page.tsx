@@ -47,11 +47,12 @@ export type ModelsResponse = Model[];
 // Define the type for the response containing an array of models
 export default function Home() {
   const [models, setModels] = useState<ModelsResponse>();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/models");
+        const response = await axios.get(`${apiUrl}/models`);
         const shuffledModels = response.data.sort(() => Math.random() - 0.5);
         setModels(shuffledModels);
       } catch (error) {
@@ -60,7 +61,7 @@ export default function Home() {
     };
 
     fetchModels();
-  }, []);
+  }, [apiUrl]);
 
   const handleOnClickModelCard = (selectedModel: Model) => {
     setSelectedModel(selectedModel);
@@ -74,7 +75,7 @@ export default function Home() {
 
       try {
         const response = await axios.get(
-          `http://localhost:8000/models/${selectedModel.id}`
+          `${apiUrl}/models/${selectedModel.id}`
         );
 
         // Only update if there are new details to add
@@ -92,7 +93,7 @@ export default function Home() {
     };
 
     fetchModelDetails();
-  }, [selectedModel?.id]);
+  }, [selectedModel?.id, apiUrl]);
 
   return (
     <div className="w-screen h-screen overflow-hidden">

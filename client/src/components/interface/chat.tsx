@@ -144,7 +144,7 @@ const ChatBox = ({ selectedModel }: { selectedModel: Model }) => {
       ]);
 
       const response = await axios.post<ChatResponse>(
-        `http://localhost:8000/chat/${selectedModel.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/chat/${selectedModel.id}`,
         {
           message,
           conversationId,
