@@ -131,7 +131,7 @@ export default function Home() {
             </button>
             {/* Add your poster content here */}
             <img
-              src="/img/how_to_poster.webp"
+              src="/img/how_to_poster.png"
               alt="Usage Poster"
               className="w-full w-[75vh] h-[75vh] rounded-3xl"
             />
